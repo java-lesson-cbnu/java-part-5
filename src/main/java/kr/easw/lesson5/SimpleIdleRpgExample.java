@@ -1,5 +1,6 @@
 package kr.easw.lesson5;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
@@ -100,13 +101,73 @@ public class SimpleIdleRpgExample {
         return new PlayerActionController();
     }
 
+    // 해당 예제는 문제를 낸 출제자 기준으로 최선을 다한 코드입니다.
+    // 해당 코드가 최고점이 아닐 수 있으며, 이보다 더 높은 점수가 나올 수 있습니다.
+    // 해당 코드 상으로 최종 점수는 368점입니다.
+    //
+    // 해당 코드는 포션과 검, 방패의 인덱스를 자동으로 지정하며, 이를 교체하는 형식으로 메커니즘을 구성하였습니다.
+    // 포션이 존재하는 경우 다음의 흐름을 따릅니다.
+    //
+    //                                          ┌──   예   ──> 방패가 존재하는가?  ────┬─── 예 ────> 방패를 착용한다
+    // 무기가 없거나, 무기의 방어력이 1 이하인가?  ───┼                                 아니오
+    //                                          └──  아니오 ──> 포션을 사용한다  <─────┘
+    //
+    // 장착된 무기가 없는 경우, 다음의 흐름을 따릅니다.
+    //
+    // 무기가 없는가? ── 예 ──> 검을 장착한다
+    //
+    // 장착된 무기가 존재하는 경우, 다음의 흐름을 따릅니다.
+    //
+    // 무기가 없거나 무기의 방어력이 1 이하인가? ─── 예 ───> 들어올 피해의 임계선보다 적의 공격력이 큰가? ─── 예 ───┐
+    //                   방패를 장착한다 <─── 예 ───  캐릭터의 체력이 적의 피해량과 HP 버퍼를 더한것보다 적은가? ─┘
     private static class PlayerActionController {
+
+        private static final int THRESHOLD_HP_BUFFER = 2;
+
+        private static final int DAMAGE_THRESHOLD = 15;
+
+        private static int potionIndex = -1;
+
+        private static int swordIndex = -1;
+
+        private static int shieldIndex = -1;
+
+
         public void onPlayerTurn(CharacterData characterData, InventoryData inventoryData, EnemyData enemyData) {
-            throw new RuntimeException("이 코드 라인을 지우고, 이곳에서 작성하십시오.");
+            if (potionIndex != -1) {
+                if ((characterData.weapon == null || characterData.weapon.defence <= 1) && shieldIndex >= 7) {
+                    inventoryData.equip(characterData, shieldIndex--);
+                }
+                inventoryData.consume(characterData, potionIndex--);
+            }
+            if (characterData.weapon == null && swordIndex >= 5) {
+                inventoryData.equip(characterData, swordIndex--);
+            }
+
+            if ((characterData.weapon == null || characterData.weapon.defence <= 1) && (DAMAGE_THRESHOLD <= enemyData.power && (characterData.hp <= enemyData.power + THRESHOLD_HP_BUFFER) && shieldIndex >= 7)) {
+                inventoryData.equip(characterData, shieldIndex--);
+            }
         }
 
+
         public void onAward(CharacterData characterData, InventoryData data, ItemData[] itemData) {
-            throw new RuntimeException("이 코드 라인을 지우고, 이곳에서 작성하십시오.");
+            for (int i = 0; i < itemData.length; i++) {
+                if (itemData[i].itemName.contains("포션")) {
+                    data.acquire(characterData, itemData, i, ++potionIndex);
+                } else if (itemData[i].itemName.equals("검")) {
+                    if (swordIndex >= 7)
+                        continue;
+                    if (swordIndex == -1)
+                        swordIndex = 4;
+                    data.acquire(characterData, itemData, i, ++swordIndex);
+                } else if (itemData[i].itemName.equals("방패")) {
+                    if (shieldIndex >= 9)
+                        continue;
+                    if (shieldIndex == -1)
+                        shieldIndex = 6;
+                    data.acquire(characterData, itemData, i, ++shieldIndex);
+                }
+            }
         }
     }
 

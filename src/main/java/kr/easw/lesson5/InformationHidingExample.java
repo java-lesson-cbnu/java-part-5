@@ -43,32 +43,47 @@ public class InformationHidingExample {
     private static class Vault {
         private final String[] stored = new String[5];
 
+        // 비밀번호를 보관하기 위해 새 변수를 선언합니다.
+        // 변하지 않는 값이기 때문에 final을 사용하여 선언합니다.
+        private final String password;
+
         /**
          * 해당 생성자는 다음과 같은 역할을 가져야 합니다 :
          * 입력된 password를 새 변수에 보관해야 합니다.
          */
         public Vault(String password) {
-            throw new RuntimeException("이 코드 라인을 지우고, 이곳에서 작성하십시오.");
+            this.password = password;
         }
 
         /**
          * 해당 메서드는 다음과 같은 역할을 가져야 합니다 :
          * 지정한 인덱스에 값을 삽입해야 합니다.
-         *
+         * <p>
          * 만약 인덱스가 최대 크기보다 크다면, IllegalStateException을 발생시켜야 합니다.
          */
         public void set(int index, String target) {
-            throw new RuntimeException("이 코드 라인을 지우고, 이곳에서 작성하십시오.");
+            // 설정할 인덱스가 stored의 크기보다 크거나 같다면, 설정이 불가하기에 오류를 발생시킵니다.
+            if (index >= stored.length) {
+                throw new IllegalStateException("설정할 값이 최대 크기를 벗어납니다.");
+            }
+            // 만약 아니라면, 값을 삽입합니다.
+            this.stored[index] = target;
         }
 
         /**
          * 해당 메서드는 다음과 같은 역할을 가져야 합니다 :
          * 지정한 인덱스에 존재하는 값을 반환해야 합니다.
-         *
+         * <p>
          * 만약 저장된 비밀번호와 입력된 비밀번호가 다르다면 IllegalStateException을 발생시켜야 합니다.
          */
         public String access(String password, int index) {
-            throw new RuntimeException("이 코드 라인을 지우고, 이곳에서 작성하십시오.");
+            // 먼저 비밀번호를 비교합니다.
+            if (!this.password.equals(password)) {
+                // 입력한 비밀번호가 일치하지 않는다면, 오류를 발생시킵니다.
+                throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
+            }
+            // 일치한다면, 저장된 값 중 인덱스에 있는 값을 반환합니다.
+            return this.stored[index];
         }
     }
 }
